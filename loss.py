@@ -60,10 +60,17 @@ class LossAll(torch.nn.Module):
         self.L_hm = FocalLoss()
         self.L_off = RegL1Loss()
         self.L_wh =  RegL1Loss()
+        self.L_cpie =  RegL1Loss()
+        self.L_avie =  RegL1Loss()
+        self.L_spline =  RegL1Loss()
 
     def forward(self, pr_decs, gt_batch):
         hm_loss  = self.L_hm(pr_decs['hm'],  gt_batch['hm'])
         wh_loss  = self.L_wh(pr_decs['wh'], gt_batch['reg_mask'], gt_batch['ind'], gt_batch['wh'])
         off_loss = self.L_off(pr_decs['reg'], gt_batch['reg_mask'], gt_batch['ind'], gt_batch['reg'])
-        loss_dec = hm_loss + off_loss + wh_loss
+        cpie_loss = self.L_off(pr_decs['cpie'], gt_batch['reg_mask'], gt_batch['ind'], gt_batch['cpie'])
+        avie_loss = self.L_off(pr_decs['avie'], gt_batch['reg_mask'], gt_batch['ind'], gt_batch['avie'])
+        spline_loss = self.L_spline(pr_decs['spline'], gt_batch['spline_mask'], gt_batch['ind_new'], gt_batch['spline'])
+
+        loss_dec = hm_loss + off_loss + wh_loss + cpie_loss + avie_loss + 0.05 * spline_loss
         return loss_dec

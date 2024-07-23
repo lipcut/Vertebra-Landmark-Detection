@@ -57,16 +57,20 @@ class DecDecoder(object):
         xs = xs.view(batch, self.K, 1) + reg[:, :, 0:1]
         ys = ys.view(batch, self.K, 1) + reg[:, :, 1:2]
         wh = self._tranpose_and_gather_feat(wh, inds)
-        wh = wh.view(batch, self.K, 2*4)
+        wh = wh.view(batch, self.K, 4, 2)
 
-        tl_x = xs - wh[:,:,0:1]
-        tl_y = ys - wh[:,:,1:2]
-        tr_x = xs - wh[:,:,2:3]
-        tr_y = ys - wh[:,:,3:4]
-        bl_x = xs - wh[:,:,4:5]
-        bl_y = ys - wh[:,:,5:6]
-        br_x = xs - wh[:,:,6:7]
-        br_y = ys - wh[:,:,7:8]
+        radiuses = wh[:, :, :, 0]
+        thetas = wh[:, :, :, 1]
+        wh_cartesian = torch.stack((radiuses * torch.cos(thetas), radiuses * torch.sin(thetas)), dim=-1).view(batch, self.K, 4 * 2)
+
+        tl_x = xs + wh_cartesian[:,:,0:1]
+        tl_y = ys + wh_cartesian[:,:,1:2]
+        tr_x = xs + wh_cartesian[:,:,2:3]
+        tr_y = ys + wh_cartesian[:,:,3:4]
+        bl_x = xs + wh_cartesian[:,:,4:5]
+        bl_y = ys + wh_cartesian[:,:,5:6]
+        br_x = xs + wh_cartesian[:,:,6:7]
+        br_y = ys + wh_cartesian[:,:,7:8]
 
         pts = torch.cat([xs, ys,
                          tl_x,tl_y,
