@@ -135,7 +135,7 @@ def generate_ground_truth(image, pts_2, image_h, image_w, img_id):
         cpie[idx + 1, 2:4] = center_next - center_current
 
     cpie[0, 2:4] = -cpie[1, 0:2].copy()
-    cpie[16, 0:2] = -cpie[15, 3:4].copy()
+    cpie[16, 0:2] = -cpie[15, 2:4].copy()
 
     for idx, (vetebra_prev, vetebra_current, vetebra_next) in enumerate(
         zip(pts_temp[:, :, :], pts_temp[1:, :, :], pts_temp[2:, :, :])
